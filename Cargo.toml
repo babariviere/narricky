@@ -1,0 +1,6 @@
+[package]
+name = "narricky"
+version = "0.1.0"
+authors = ["fourdotfiveg <fourdotfiveg@gmail.com>"]
+
+[dependencies]
