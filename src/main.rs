@@ -13,20 +13,13 @@ use openssl::ssl::{SslConnectorBuilder, SslMethod};
 use openssl::ssl::SslStream;
 use imap::client::Client;
 use std::env;
-use std::io::Read;
-use std::fs::File;
 use std::path::Path;
 use std::net::TcpStream;
-use toml::Value;
 
 use config::Config;
 
 fn parse_file<P: AsRef<Path>>(path: P) -> Client<SslStream<TcpStream>> {
-    let mut f = File::open(path).unwrap();
-    let mut buf = String::new();
-    f.read_to_string(&mut buf).unwrap();
-    let config_val: Value = toml::from_str(&buf).unwrap();
-    let config = match Config::from_toml(config_val) {
+    let config = match Config::from_file(path) {
         Ok(config) => config,
         Err(e) => {
             println!("{}", e);
