@@ -1,8 +1,13 @@
+#[macro_use]
+extern crate error_chain;
 extern crate imap;
 extern crate openssl;
 #[macro_use]
 extern crate serde_derive;
 extern crate toml;
+
+mod error;
+mod config;
 
 use openssl::ssl::{SslConnectorBuilder, SslMethod};
 use openssl::ssl::SslStream;
@@ -12,26 +17,20 @@ use std::io::Read;
 use std::fs::File;
 use std::path::Path;
 use std::net::TcpStream;
+use toml::Value;
 
-#[derive(Deserialize)]
-struct Config {
-    account: Account,
-}
-
-#[derive(Deserialize)]
-struct Account {
-    username: String,
-    password: String,
-    domain: String,
-    port: u16,
-}
+use config::Config;
 
 fn parse_file<P: AsRef<Path>>(path: P) -> Client<SslStream<TcpStream>> {
     let mut f = File::open(path).unwrap();
     let mut buf = String::new();
     f.read_to_string(&mut buf).unwrap();
-    let config: Config = toml::from_str(&buf).unwrap();
+    println!("{:?}", toml::from_str::<toml::Value>(&buf).unwrap());
+    let config_val: Value = toml::from_str(&buf).unwrap();
+    let config = Config::from_toml(config_val).unwrap();
     let account = config.account;
+    println!("{:?}", account);
+    println!("{:?}", config.rules);
     let ssl_connector = SslConnectorBuilder::new(SslMethod::tls()).unwrap().build();
     let mut imap_socket = Client::secure_connect(
         (account.domain.as_str(), account.port),
@@ -44,9 +43,6 @@ fn parse_file<P: AsRef<Path>>(path: P) -> Client<SslStream<TcpStream>> {
     imap_socket
 }
 
-// To connect to the gmail IMAP server with this you will need to allow unsecure apps access.
-// See: https://support.google.com/accounts/answer/6010255?hl=en
-// Look at the gmail_oauth2.rs example on how to connect to a gmail server securely.
 fn main() {
     let mut args = env::args();
     let mut imap_socket;
@@ -56,32 +52,32 @@ fn main() {
     } else {
         panic!("Missing file");
     }
-    match imap_socket.capability() {
-        Ok(capabilities) => {
-            for capability in capabilities.iter() {
-                println!("{}", capability);
-            }
-        }
-        Err(e) => println!("Error parsing capability: {}", e),
-    };
+    //match imap_socket.capability() {
+    //    Ok(capabilities) => {
+    //        for capability in capabilities.iter() {
+    //            println!("{}", capability);
+    //        }
+    //    }
+    //    Err(e) => println!("Error parsing capability: {}", e),
+    //};
 
-    match imap_socket.select("INBOX") {
-        Ok(mailbox) => {
-            println!("{}", mailbox);
-        }
-        Err(e) => println!("Error selecting INBOX: {}", e),
-    };
+    //match imap_socket.select("INBOX") {
+    //    Ok(mailbox) => {
+    //        println!("{}", mailbox);
+    //    }
+    //    Err(e) => println!("Error selecting INBOX: {}", e),
+    //};
 
-    //imap_socket.create("NEWBOW/SubBox").unwrap();
+    ////imap_socket.create("NEWBOW/SubBox").unwrap();
 
-    match imap_socket.list("/", "*") {
-        Ok(a) => {
-            for b in a {
-                println!("{}", b);
-            }
-        }
-        Err(e) => println!("Error listing: {}", e),
-    }
+    //match imap_socket.list("/", "*") {
+    //    Ok(a) => {
+    //        for b in a {
+    //            println!("{}", b);
+    //        }
+    //    }
+    //    Err(e) => println!("Error listing: {}", e),
+    //}
 
 
     // match imap_socket.fetch("2", "body[text]") {

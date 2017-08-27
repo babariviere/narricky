@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["fourdotfiveg <fourdotfiveg@gmail.com>"]
 
 [dependencies]
+error-chain = "0.10"
 imap = "0.3"
 openssl = "0.9"
 serde = "1.0"
