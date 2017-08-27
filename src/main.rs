@@ -25,12 +25,15 @@ fn parse_file<P: AsRef<Path>>(path: P) -> Client<SslStream<TcpStream>> {
     let mut f = File::open(path).unwrap();
     let mut buf = String::new();
     f.read_to_string(&mut buf).unwrap();
-    println!("{:?}", toml::from_str::<toml::Value>(&buf).unwrap());
     let config_val: Value = toml::from_str(&buf).unwrap();
-    let config = Config::from_toml(config_val).unwrap();
+    let config = match Config::from_toml(config_val) {
+        Ok(config) => config,
+        Err(e) => {
+            println!("{}", e);
+            ::std::process::exit(1);
+        }
+    };
     let account = config.account;
-    println!("{:?}", account);
-    println!("{:?}", config.rules);
     let ssl_connector = SslConnectorBuilder::new(SslMethod::tls()).unwrap().build();
     let mut imap_socket = Client::secure_connect(
         (account.domain.as_str(), account.port),
