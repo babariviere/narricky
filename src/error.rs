@@ -1,5 +1,6 @@
 
-const MISSING_ACCOUNT_ERR: &'static str = "Account field is missing from config file, to fix this error please add these lines at the start \
+const MISSING_ACCOUNT_ERR: &'static str = "Account field is missing from config file, \
+                to fix this error please add these lines at the start \
                 into your config file:\n\
                 [account]\n\
                 username = \"your@mail.here\"\n\
@@ -11,6 +12,8 @@ const MISSING_ACCOUNT_ERR: &'static str = "Account field is missing from config 
 error_chain! {
     foreign_links {
         Io(::std::io::Error);
+        Imap(::imap::error::Error);
+        OpensslStack(::openssl::error::ErrorStack);
         TomlDe(::toml::de::Error);
     }
 

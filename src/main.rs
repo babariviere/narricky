@@ -11,7 +11,6 @@ mod config;
 mod error;
 mod rule;
 
-use openssl::ssl::{SslConnectorBuilder, SslMethod};
 use openssl::ssl::SslStream;
 use imap::client::Client;
 use std::env;
@@ -29,16 +28,7 @@ fn parse_file<P: AsRef<Path>>(path: P) -> Client<SslStream<TcpStream>> {
         }
     };
     let account = config.account;
-    let ssl_connector = SslConnectorBuilder::new(SslMethod::tls()).unwrap().build();
-    let mut imap_socket = Client::secure_connect(
-        (account.domain.as_str(), account.port),
-        &account.domain,
-        ssl_connector,
-    ).unwrap();
-    imap_socket
-        .login(&account.username, &account.password)
-        .unwrap();
-    imap_socket
+    account.secure_connect().unwrap()
 }
 
 fn main() {
