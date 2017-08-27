@@ -16,13 +16,18 @@ secure = true
 
 ## This is an example, this may change in the future
 [rule.rule_name_here]
+description = "move all gmail account to folder gmail"
 conditions = [ "from contains gmail.com",
 	"subject is Hello world" ]
 actions = [ "move to gmail" ]
+exceptions = []
 ```
 
 ## List of conditions
 TODO
 
-# List of actions
+## List of actions
+TODO
+
+## List of exceptions
 TODO
