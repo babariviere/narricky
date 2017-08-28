@@ -129,6 +129,18 @@ impl Connection {
         }
     }
 
+    /// Alters data with a message
+    pub fn store(&mut self, sequence_set: &str, query: &str) -> Result<Vec<String>> {
+        match &mut self.0 {
+            &mut ConnectionResult::Normal(ref mut s) => {
+                s.store(sequence_set, query).chain_err(|| "fail with store")
+            }
+            &mut ConnectionResult::Secure(ref mut s) => {
+                s.store(sequence_set, query).chain_err(|| "fail with store")
+            }
+        }
+    }
+
     /// List mails
     pub fn list(&mut self, ref_name: &str, mailbox_search_pattern: &str) -> Result<Vec<String>> {
         match &mut self.0 {

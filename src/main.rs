@@ -35,7 +35,8 @@ fn main() {
             .status("INBOX", "(MESSAGES UNSEEN RECENT)")
             .unwrap()
     );
-    println!("{:?}", connection.fetch("3", "body[text]").unwrap());
+    println!("{:?}", connection.fetch("3:*", "body[text]").unwrap());
+    //println!("{:?}", connection.store("1:*", "-FLAGS (\\Seen)").unwrap());
     //match imap_socket.capability() {
     //    Ok(capabilities) => {
     //        for capability in capabilities.iter() {
