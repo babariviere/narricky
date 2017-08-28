@@ -7,39 +7,35 @@ extern crate serde_derive;
 extern crate toml;
 
 mod account;
+mod connection;
 mod config;
 mod error;
 mod rule;
 
-use openssl::ssl::SslStream;
-use imap::client::Client;
 use std::env;
-use std::path::Path;
-use std::net::TcpStream;
 
+use connection::Connection;
 use config::Config;
-
-fn parse_file<P: AsRef<Path>>(path: P) -> Client<SslStream<TcpStream>> {
-    let config = match Config::from_file(path) {
-        Ok(config) => config,
-        Err(e) => {
-            println!("{}", e);
-            ::std::process::exit(1);
-        }
-    };
-    let account = config.account;
-    account.secure_connect().unwrap()
-}
 
 fn main() {
     let mut args = env::args();
-    let mut imap_socket;
+    let config;
     args.next();
     if let Some(file) = args.next() {
-        imap_socket = parse_file(file);
+        config = Config::from_file(file).unwrap();
     } else {
         panic!("Missing file");
     }
+    let mut connection = Connection::connect(&config.account).unwrap();
+    connection.select("INBOX").unwrap();
+    println!("{:?}", connection.list("INBOX", "*").unwrap());
+    println!(
+        "{:?}",
+        connection
+            .status("INBOX", "(MESSAGES UNSEEN RECENT)")
+            .unwrap()
+    );
+    println!("{:?}", connection.fetch("3", "body[text]").unwrap());
     //match imap_socket.capability() {
     //    Ok(capabilities) => {
     //        for capability in capabilities.iter() {
@@ -77,5 +73,5 @@ fn main() {
     //     Err(e) => println!("Error Fetching email 2: {}", e),
     // };
 
-    imap_socket.logout().unwrap();
+    //imap_socket.logout().unwrap();
 }
