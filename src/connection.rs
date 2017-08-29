@@ -129,6 +129,18 @@ impl Connection {
         }
     }
 
+    /// Removes all messages that have the \Deleted flag
+    pub fn expunge(&mut self) -> Result<()> {
+        match &mut self.0 {
+            &mut ConnectionResult::Normal(ref mut s) => {
+                s.expunge().chain_err(|| "fail with expunge")
+            }
+            &mut ConnectionResult::Secure(ref mut s) => {
+                s.expunge().chain_err(|| "fail with expunge")
+            }
+        }
+    }
+
     /// Alters data with a message
     pub fn store(&mut self, sequence_set: &str, query: &str) -> Result<Vec<String>> {
         match &mut self.0 {
@@ -137,6 +149,22 @@ impl Connection {
             }
             &mut ConnectionResult::Secure(ref mut s) => {
                 s.store(sequence_set, query).chain_err(|| "fail with store")
+            }
+        }
+    }
+
+    /// Copy message to mailbox
+    pub fn copy(&mut self, sequence_set: &str, mailbox_name: &str) -> Result<()> {
+        match &mut self.0 {
+            &mut ConnectionResult::Normal(ref mut s) => {
+                s.copy(sequence_set, mailbox_name).chain_err(
+                    || "fail with copying",
+                )
+            }
+            &mut ConnectionResult::Secure(ref mut s) => {
+                s.copy(sequence_set, mailbox_name).chain_err(
+                    || "fail with copying",
+                )
             }
         }
     }
