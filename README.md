@@ -24,7 +24,27 @@ exceptions = []
 ```
 
 ## List of conditions
-TODO
+Conditions 3 fields:
+- First one is the field, ex: recipient, sender...
+- Second one is the checker, ex: is, contains...
+- Third one is the text to check
+
+Here are all the fields for now:
+
+`sender` - Who send the mail
+
+`recipient` - Who received the mail
+
+`cc` - Who are in the copy field
+
+`subject` - Mail subject
+
+
+Here all the checkers for now:
+
+`is` - Text should match exactly
+
+`contains` - Text contains specified text
 
 ## List of actions
 `no more rules` - Stop applying rules
