@@ -22,6 +22,14 @@ error_chain! {
             description("given action is invalid")
             display("action `{}` is invalid", action)
         }
+        InvalidCondition(condition: String) {
+            description("given condition is invalid")
+            display("condition `{}` is invalid", condition)
+        }
+        InvalidConditionChecker(checker: String) {
+            description("given condition checker is invalid")
+            display("checker `{}` is invalid", checker)
+        }
         MissingAccount {
             description("no account field in configuration file")
             display("{}", MISSING_ACCOUNT_ERR)
