@@ -27,7 +27,29 @@ exceptions = []
 TODO
 
 ## List of actions
-TODO
+`no more rules` - Stop applying rules
+
+`copy to <folder>` - Copy mail to folder
+
+`move to <folder>` - Move mail to folder
+
+`delete` - Delete mail (not permanent)
+
+`permanent delete` - Delete mail (permanent)
+
+`forward to <mail@address>` - Forward mail to an another person
+
+`reply with <text>` - Reply to sender with text
+
+`set flag <flag>` - Apply flag to mail
+
+`remove flag <flag>` - Remove flag from mail
+
+`clear flags` - Remove all flags from mail
+
+`mark as important` - Mark mail as important
+
+`mark as read` - Mark mail as read
 
 ## List of exceptions
 TODO
