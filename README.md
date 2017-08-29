@@ -38,7 +38,8 @@ Here are all the fields for now:
 `cc` - Who are in the copy field
 
 `subject` - Mail subject
-
+    
+<br />
 
 Here all the checkers for now:
 
