@@ -25,6 +25,7 @@ enum ConditionType {
     Sender(ConditionChecker, String),
     Cc(ConditionChecker, String),
     Recipient(ConditionChecker, String),
+    Subject(ConditionChecker, String),
 }
 
 impl ConditionType {
@@ -43,6 +44,11 @@ impl ConditionType {
             Ok(ConditionType::Cc(checker, condition[len + 2..].to_string()))
         } else if splitted[0] == "recipient" {
             Ok(ConditionType::Recipient(
+                checker,
+                condition[len + 2..].to_string(),
+            ))
+        } else if splitted[0] == "subject" {
+            Ok(ConditionType::Subject(
                 checker,
                 condition[len + 2..].to_string(),
             ))
@@ -105,6 +111,20 @@ mod unit_tests {
             ConditionType::parse("recipient contains hello").unwrap(),
             ConditionType::Recipient(ConditionChecker::Contains, "hello".to_string()),
             "fail with recipient contains"
+        );
+    }
+
+    #[test]
+    fn condition_subject() {
+        assert_eq!(
+            ConditionType::parse("subject is hello world").unwrap(),
+            ConditionType::Subject(ConditionChecker::Is, "hello world".to_string()),
+            "fail with subject is"
+        );
+        assert_eq!(
+            ConditionType::parse("subject contains hello").unwrap(),
+            ConditionType::Subject(ConditionChecker::Contains, "hello".to_string()),
+            "fail with subject contains"
         );
     }
 }
