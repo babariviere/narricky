@@ -18,6 +18,10 @@ error_chain! {
     }
 
     errors {
+        InvalidAction(action: String) {
+            description("given action is invalid")
+            display("action `{}` is invalid", action)
+        }
         MissingAccount {
             description("no account field in configuration file")
             display("{}", MISSING_ACCOUNT_ERR)
