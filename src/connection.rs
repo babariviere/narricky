@@ -91,8 +91,7 @@ impl Connection {
         text.remove(0);
         text.pop();
         text.pop();
-        headers.append(&mut text);
-        Mail::parse_fetched(headers)
+        Mail::parse_fetched(headers, text)
     }
 
     /// Create a mailbox

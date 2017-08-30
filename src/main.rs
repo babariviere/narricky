@@ -36,20 +36,14 @@ fn main() {
             .status("INBOX", "(MESSAGES UNSEEN RECENT)")
             .unwrap()
     );
-    //println!(
-    //    "{:?}",
-    //    connection
-    //        .fetch("10", "body.peek[header.fields (FROM TO CC SUBJECT)]")
-    //        .unwrap()
-    //);
-    //println!("{:?}", connection.fetch("10", "body.peek[1]").unwrap());
+    println!(
+        "{:?}",
+        connection
+            .fetch("10", "body.peek[header.fields (FROM TO CC SUBJECT)]")
+            .unwrap()
+    );
+    println!("{:?}", connection.fetch("10", "body.peek[1]").unwrap());
     println!("{:?}", connection.fetch_mail(10).unwrap());
-    //println!(
-    //    "{:?}",
-    //    connection
-    //        .fetch("1:*", "(BODY[HEADER.FIELDS (SUBJECT FROM)])")
-    //        .unwrap()
-    //);
     //println!("{:?}", connection.store("1:*", "-FLAGS (\\Seen)").unwrap());
     //match imap_socket.capability() {
     //    Ok(capabilities) => {
