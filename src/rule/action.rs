@@ -1,3 +1,4 @@
+use connection::Connection;
 use error::*;
 
 /// Describe action type
@@ -49,6 +50,54 @@ impl ActionType {
             bail!(ErrorKind::InvalidAction(action.to_string()));
         }
     }
+
+    /// Apply action to mail
+    fn apply(&self, connection: &mut Connection, idx: &mut usize) -> Result<()> {
+        match self {
+            &ActionType::CopyTo(ref folder) => connection.copy(&idx.to_string(), folder),
+            &ActionType::MoveTo(ref folder) => {
+                connection.copy(&idx.to_string(), folder)?;
+                connection.store(&idx.to_string(), "+flags (\\deleted)")?;
+                connection.expunge()?;
+                *idx -= 1;
+                Ok(())
+            }
+            &ActionType::Delete => {
+                connection.store(&idx.to_string(), "+flags (\\deleted)")?;
+                Ok(())
+            }
+            &ActionType::PermanentDelete => {
+                connection.store(&idx.to_string(), "+flags (\\deleted)")?;
+                connection.expunge()?;
+                *idx -= 1;
+                Ok(())
+            }
+            &ActionType::SetFlag(ref flag) => {
+                connection.store(
+                    &idx.to_string(),
+                    &format!("+flags ({})", flag),
+                )?;
+                Ok(())
+            }
+            &ActionType::RemoveFlag(ref flag) => {
+                connection.store(
+                    &idx.to_string(),
+                    &format!("-flags ({})", flag),
+                )?;
+                Ok(())
+            }
+            &ActionType::ClearFlags => {
+                // TODO connection.store(idx.to_string(), &format!("+flags ({})", flag));
+                Ok(())
+            }
+            &ActionType::MarkAsImportant => connection.copy(&idx.to_string(), "Important"),
+            &ActionType::MarkAsRead => {
+                connection.store(&idx.to_string(), "+flags (\\seen)")?;
+                Ok(())
+            }
+            _ => unimplemented!(),
+        }
+    }
 }
 
 /// Action structure to apply
@@ -59,6 +108,11 @@ impl Action {
     pub fn new<S: AsRef<str>>(action: S) -> Result<Action> {
         let act = ActionType::parse(action)?;
         Ok(Action(act))
+    }
+
+    /// Apply action to mail
+    pub fn apply(&self, connection: &mut Connection, idx: &mut usize) -> Result<()> {
+        self.0.apply(connection, idx)
     }
 }
 
