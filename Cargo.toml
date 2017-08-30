@@ -6,6 +6,7 @@ authors = ["fourdotfiveg <fourdotfiveg@gmail.com>"]
 [dependencies]
 error-chain = "0.10"
 imap = "0.3"
+mailparse = "0.5"
 openssl = "0.9"
 serde = "1.0"
 serde_derive = "1.0"

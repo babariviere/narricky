@@ -91,7 +91,8 @@ impl Connection {
         text.remove(0);
         text.pop();
         text.pop();
-        Mail::parse_fetched(headers, text)
+        headers.append(&mut text);
+        Mail::parse_fetched(headers)
     }
 
     /// Create a mailbox
@@ -216,6 +217,18 @@ impl Connection {
                 )
             }
         }
+    }
+
+    /// Get number of mails
+    pub fn mail_number(&mut self, mailbox_name: &str) -> Result<usize> {
+        let status = self.status(mailbox_name, "(messages)")?;
+        let num = status[0]
+            .matches(char::is_numeric)
+            .map(|c| c)
+            .collect::<String>();
+        num.parse::<usize>().chain_err(
+            || "fail parsing number of mails",
+        )
     }
 
     /// Wait for new event

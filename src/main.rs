@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate error_chain;
 extern crate imap;
+extern crate mailparse;
 extern crate openssl;
 #[macro_use]
 extern crate serde_derive;
@@ -29,21 +30,22 @@ fn main() {
     }
     let mut connection = Connection::connect(&config.account).unwrap();
     connection.select("INBOX").unwrap();
-    println!("{:?}", connection.list("INBOX", "*").unwrap());
-    println!(
-        "{:?}",
-        connection
-            .status("INBOX", "(MESSAGES UNSEEN RECENT)")
-            .unwrap()
-    );
-    println!(
-        "{:?}",
-        connection
-            .fetch("10", "body.peek[header.fields (FROM TO CC SUBJECT)]")
-            .unwrap()
-    );
-    println!("{:?}", connection.fetch("10", "body.peek[1]").unwrap());
-    println!("{:?}", connection.fetch_mail(10).unwrap());
+    for i in 1..connection.mail_number("INBOX").unwrap() {
+        let mail = connection.fetch_mail(i).unwrap();
+        'rule_loop: for rule in &config.rules {
+            for condition in &rule.conditions {
+                if !condition.check(&mail) {
+                    println!(
+                        "mail does not meet condition {:?}: {}",
+                        condition,
+                        mail.subject
+                    );
+                    continue 'rule_loop;
+                }
+            }
+            println!("mail does meet conditions: {}", mail.subject);
+        }
+    }
     //println!("{:?}", connection.store("1:*", "-FLAGS (\\Seen)").unwrap());
     //match imap_socket.capability() {
     //    Ok(capabilities) => {

@@ -101,6 +101,7 @@ impl ActionType {
 }
 
 /// Action structure to apply
+#[derive(Debug, PartialEq)]
 pub struct Action(ActionType);
 
 impl Action {

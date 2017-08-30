@@ -13,6 +13,7 @@ error_chain! {
     foreign_links {
         Io(::std::io::Error);
         Imap(::imap::error::Error);
+        MailParse(::mailparse::MailParseError);
         OpensslStack(::openssl::error::ErrorStack);
         TomlDe(::toml::de::Error);
     }

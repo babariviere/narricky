@@ -100,6 +100,7 @@ impl ConditionType {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Condition(ConditionType);
 
 impl Condition {
