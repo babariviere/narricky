@@ -2,6 +2,7 @@ use account::Account;
 use error::*;
 use imap::client::Client;
 use imap::mailbox::Mailbox;
+use mail::Mail;
 use openssl::ssl::{SslConnectorBuilder, SslMethod, SslStream};
 use std::net::TcpStream;
 
@@ -75,6 +76,23 @@ impl Connection {
                 )
             }
         }
+    }
+
+    /// Fetch mail
+    pub fn fetch_mail(&mut self, index: usize) -> Result<Mail> {
+        let mut headers = self.fetch(
+            &index.to_string(),
+            "body.peek[header.fields (FROM TO CC SUBJECT)]",
+        )?;
+        let mut text = self.fetch(&index.to_string(), "body.peek[1]")?;
+        headers.remove(0);
+        headers.pop();
+        headers.pop();
+        text.remove(0);
+        text.pop();
+        text.pop();
+        headers.append(&mut text);
+        Mail::parse_fetched(headers)
     }
 
     /// Create a mailbox
