@@ -52,14 +52,18 @@ impl ActionType {
     }
 
     /// Apply action to mail
-    fn apply(&self, connection: &mut Connection, idx: &mut usize) -> Result<()> {
+    fn apply(&self, connection: &mut Connection, idx: usize) -> Result<()> {
         match self {
-            &ActionType::CopyTo(ref folder) => connection.copy(&idx.to_string(), folder),
+            &ActionType::CopyTo(ref folder) => {
+                connection.create(folder)?;
+                connection.copy(&idx.to_string(), folder)?;
+                Ok(())
+            }
             &ActionType::MoveTo(ref folder) => {
+                connection.create(folder)?;
                 connection.copy(&idx.to_string(), folder)?;
                 connection.store(&idx.to_string(), "+flags (\\deleted)")?;
                 connection.expunge()?;
-                *idx -= 1;
                 Ok(())
             }
             &ActionType::Delete => {
@@ -69,7 +73,6 @@ impl ActionType {
             &ActionType::PermanentDelete => {
                 connection.store(&idx.to_string(), "+flags (\\deleted)")?;
                 connection.expunge()?;
-                *idx -= 1;
                 Ok(())
             }
             &ActionType::SetFlag(ref flag) => {
@@ -112,8 +115,17 @@ impl Action {
     }
 
     /// Apply action to mail
-    pub fn apply(&self, connection: &mut Connection, idx: &mut usize) -> Result<()> {
+    pub fn apply(&self, connection: &mut Connection, idx: usize) -> Result<()> {
         self.0.apply(connection, idx)
+    }
+
+    /// Check if actions remove mail
+    pub fn remove_mail(&self) -> bool {
+        match self.0 {
+            ActionType::MoveTo(_) |
+            ActionType::PermanentDelete => true,
+            _ => false,
+        }
     }
 }
 

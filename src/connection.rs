@@ -97,6 +97,10 @@ impl Connection {
 
     /// Create a mailbox
     pub fn create(&mut self, mailbox_name: &str) -> Result<()> {
+        // TODO test subfolder
+        if self.list("/", mailbox_name)?.len() >= 2 {
+            return Ok(());
+        }
         match &mut self.0 {
             &mut ConnectionResult::Normal(ref mut s) => {
                 s.create(mailbox_name).chain_err(|| "fail when creating")

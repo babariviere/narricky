@@ -30,59 +30,37 @@ fn main() {
     }
     let mut connection = Connection::connect(&config.account).unwrap();
     connection.select("INBOX").unwrap();
-    for i in 1..connection.mail_number("INBOX").unwrap() {
+    println!(
+        "{:?}",
+        connection.status("INBOX", "(MESSAGES UNSEEN RECENT)")
+    );
+    let mut i = 0;
+    let mut len = connection.mail_number("INBOX").unwrap() + 1;
+    // TODO test delete and else
+    // TODO fix condition is for sender, just parse mail
+    // TODO add sender_mail and sender_name
+    while i < len {
+        i += 1;
         let mail = connection.fetch_mail(i).unwrap();
         'rule_loop: for rule in &config.rules {
             for condition in &rule.conditions {
                 if !condition.check(&mail) {
                     println!(
-                        "mail does not meet condition {:?}: {}",
+                        "mail does not meet condition {:?}: {:?}",
                         condition,
-                        mail.subject
+                        mail.from
                     );
                     continue 'rule_loop;
                 }
             }
             println!("mail does meet conditions: {}", mail.subject);
+            for action in &rule.actions {
+                action.apply(&mut connection, i).unwrap();
+                if action.remove_mail() {
+                    i -= 1;
+                    len -= 1;
+                }
+            }
         }
     }
-    //println!("{:?}", connection.store("1:*", "-FLAGS (\\Seen)").unwrap());
-    //match imap_socket.capability() {
-    //    Ok(capabilities) => {
-    //        for capability in capabilities.iter() {
-    //            println!("{}", capability);
-    //        }
-    //    }
-    //    Err(e) => println!("Error parsing capability: {}", e),
-    //};
-
-    //match imap_socket.select("INBOX") {
-    //    Ok(mailbox) => {
-    //        println!("{}", mailbox);
-    //    }
-    //    Err(e) => println!("Error selecting INBOX: {}", e),
-    //};
-
-    ////imap_socket.create("NEWBOW/SubBox").unwrap();
-
-    //match imap_socket.list("/", "*") {
-    //    Ok(a) => {
-    //        for b in a {
-    //            println!("{}", b);
-    //        }
-    //    }
-    //    Err(e) => println!("Error listing: {}", e),
-    //}
-
-
-    // match imap_socket.fetch("2", "body[text]") {
-    //     Ok(lines) => {
-    //         for line in lines.iter() {
-    //             print!("{}", line);
-    //         }
-    //     }
-    //     Err(e) => println!("Error Fetching email 2: {}", e),
-    // };
-
-    //imap_socket.logout().unwrap();
 }
