@@ -1,5 +1,5 @@
 use error::*;
-use mail::Mail;
+use mail::{Mail, MailAddress};
 
 #[derive(Debug, PartialEq)]
 enum ConditionChecker {
@@ -27,6 +27,17 @@ impl ConditionChecker {
             ConditionChecker::Is => checker == to_check,
             ConditionChecker::Contains => to_check.contains(checker),
         }
+    }
+
+    /// Check if condition is true, for mail address
+    fn check_mail<S: AsRef<str>>(&self, checker: S, to_checks: &Vec<MailAddress>) -> bool {
+        let checker = checker.as_ref();
+        for to_check in to_checks {
+            if self.check(&checker, &to_check.name) || self.check(&checker, &to_check.address) {
+                return true;
+            }
+        }
+        false
     }
 }
 
@@ -76,24 +87,9 @@ impl ConditionType {
     /// Check if condition is true
     fn check(&self, mail: &Mail) -> bool {
         match self {
-            &ConditionType::Sender(ref c, ref checker) => {
-                c.check(
-                    &checker,
-                    mail.from.iter().map(|s| s.to_string()).collect::<String>(),
-                )
-            }
-            &ConditionType::Cc(ref c, ref checker) => {
-                c.check(
-                    &checker,
-                    mail.cc.iter().map(|s| s.to_string()).collect::<String>(),
-                )
-            }
-            &ConditionType::Recipient(ref c, ref checker) => {
-                c.check(
-                    &checker,
-                    mail.to.iter().map(|s| s.to_string()).collect::<String>(),
-                )
-            }
+            &ConditionType::Sender(ref c, ref checker) => c.check_mail(&checker, &mail.from),
+            &ConditionType::Cc(ref c, ref checker) => c.check_mail(&checker, &mail.cc),
+            &ConditionType::Recipient(ref c, ref checker) => c.check_mail(&checker, &mail.to),
             &ConditionType::Subject(ref c, ref checker) => c.check(&checker, mail.subject.trim()),
             &ConditionType::Content(ref c, ref checker) => c.check(&checker, mail.content.trim()),
         }
@@ -197,11 +193,11 @@ mod unit_tests {
                 "Subject: Hehe\r\n",
                 "From: Inconnito <inconnito@superrito.com>\r\n",
                 "To: hineen1975@superrito.com\r\n",
+                "\r\n",
+                "Hello world\r\n",
+                "This is some text\r\n",
+                "Wow",
             ].iter()
-                .map(|s| s.to_string())
-                .collect(),
-            vec!["Hello world\r\n", "This is some text\r\n", "Wow"]
-                .iter()
                 .map(|s| s.to_string())
                 .collect(),
         ).unwrap();
@@ -218,11 +214,11 @@ mod unit_tests {
                 "Subject: Hehe\r\n",
                 "From: Inconnito <inconnito@superrito.com>\r\n",
                 "To: hineen1975@superrito.com\r\n",
+                "\r\n",
+                "Hello world\r\n",
+                "This is some text\r\n",
+                "Wow",
             ].iter()
-                .map(|s| s.to_string())
-                .collect(),
-            vec!["Hello world\r\n", "This is some text\r\n", "Wow"]
-                .iter()
                 .map(|s| s.to_string())
                 .collect(),
         ).unwrap();
@@ -237,11 +233,11 @@ mod unit_tests {
                 "Subject: Hehe\r\n",
                 "From: Inconnito <inconnito@superrito.com>\r\n",
                 "To: hineen1975@superrito.com\r\n",
+                "\r\n",
+                "Hello world\r\n",
+                "This is some text\r\n",
+                "Wow",
             ].iter()
-                .map(|s| s.to_string())
-                .collect(),
-            vec!["Hello world\r\n", "This is some text\r\n", "Wow"]
-                .iter()
                 .map(|s| s.to_string())
                 .collect(),
         ).unwrap();
@@ -259,11 +255,11 @@ mod unit_tests {
                 "From: Inconnito <inconnito@superrito.com>\r\n",
                 "To: hineen1975@superrito.com\r\n",
                 "Cc: hineen1975@superrito.com\r\n",
+                "\r\n",
+                "Hello world\r\n",
+                "This is some text\r\n",
+                "Wow",
             ].iter()
-                .map(|s| s.to_string())
-                .collect(),
-            vec!["Hello world\r\n", "This is some text\r\n", "Wow"]
-                .iter()
                 .map(|s| s.to_string())
                 .collect(),
         ).unwrap();
@@ -280,11 +276,11 @@ mod unit_tests {
                 "Subject: Hehe\r\n",
                 "From: Inconnito <inconnito@superrito.com>\r\n",
                 "To: hineen1975@superrito.com\r\n",
+                "\r\n",
+                "Hello world\r\n",
+                "This is some text\r\n",
+                "Wow",
             ].iter()
-                .map(|s| s.to_string())
-                .collect(),
-            vec!["Hello world\r\n", "This is some text\r\n", "Wow"]
-                .iter()
                 .map(|s| s.to_string())
                 .collect(),
         ).unwrap();

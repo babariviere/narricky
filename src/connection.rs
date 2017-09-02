@@ -51,17 +51,6 @@ impl Connection {
     }
 
     /// Examine a mailbox
-    pub fn examine(&mut self, mailbox_name: &str) -> Result<Mailbox> {
-        match &mut self.0 {
-            &mut ConnectionResult::Normal(ref mut s) => {
-                s.examine(mailbox_name).chain_err(|| "fail when examining")
-            }
-            &mut ConnectionResult::Secure(ref mut s) => {
-                s.examine(mailbox_name).chain_err(|| "fail when examining")
-            }
-        }
-    }
-
     /// Fetch data
     pub fn fetch(&mut self, sequence_set: &str, query: &str) -> Result<Vec<String>> {
         match &mut self.0 {
@@ -92,6 +81,7 @@ impl Connection {
         text.pop();
         text.pop();
         headers.append(&mut text);
+        println!("{:?}", headers);
         Mail::parse_fetched(headers)
     }
 
@@ -107,46 +97,6 @@ impl Connection {
             }
             &mut ConnectionResult::Secure(ref mut s) => {
                 s.create(mailbox_name).chain_err(|| "fail when creating")
-            }
-        }
-    }
-
-    /// Delete a mailbox
-    pub fn delete(&mut self, mailbox_name: &str) -> Result<()> {
-        match &mut self.0 {
-            &mut ConnectionResult::Normal(ref mut s) => {
-                s.delete(mailbox_name).chain_err(|| "fail when deleting")
-            }
-            &mut ConnectionResult::Secure(ref mut s) => {
-                s.delete(mailbox_name).chain_err(|| "fail when deleting")
-            }
-        }
-    }
-
-    /// Rename a mailbox
-    pub fn rename(&mut self, mailbox_name: &str, new_mailbox_name: &str) -> Result<()> {
-        match &mut self.0 {
-            &mut ConnectionResult::Normal(ref mut s) => {
-                s.rename(mailbox_name, new_mailbox_name).chain_err(
-                    || "fail when renaming",
-                )
-            }
-            &mut ConnectionResult::Secure(ref mut s) => {
-                s.rename(mailbox_name, new_mailbox_name).chain_err(
-                    || "fail when renaming",
-                )
-            }
-        }
-    }
-
-    /// List of capabilites
-    pub fn capability(&mut self) -> Result<Vec<String>> {
-        match &mut self.0 {
-            &mut ConnectionResult::Normal(ref mut s) => {
-                s.capability().chain_err(|| "fail when getting capabilites")
-            }
-            &mut ConnectionResult::Secure(ref mut s) => {
-                s.capability().chain_err(|| "fail when getting capabilites")
             }
         }
     }
