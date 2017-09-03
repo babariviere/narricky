@@ -23,7 +23,7 @@ actions = [ "move to gmail" ]
 exceptions = []
 ```
 
-## List of conditions
+## List of conditions (and exceptions)
 Conditions 3 fields:
 - First one is the field, ex: recipient, sender...
 - Second one is the checker, ex: is, contains...
@@ -71,6 +71,3 @@ Here all the checkers for now:
 `mark as important` - Mark mail as important
 
 `mark as read` - Mark mail as read
-
-## List of exceptions
-TODO
