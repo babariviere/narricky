@@ -81,7 +81,6 @@ impl Connection {
         text.pop();
         text.pop();
         headers.append(&mut text);
-        println!("{:?}", headers);
         Mail::parse_fetched(headers)
     }
 

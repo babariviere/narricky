@@ -1,10 +1,8 @@
 mod action;
 mod condition;
-mod exception;
 
 pub use self::action::*;
 pub use self::condition::*;
-pub use self::exception::*;
 
 use error::*;
 use toml::Value;
@@ -13,6 +11,7 @@ use toml::Value;
 #[derive(Deserialize)]
 struct RuleData {
     pub description: Option<String>,
+    pub any: Option<bool>,
     pub conditions: Vec<String>,
     pub actions: Vec<String>,
     pub exceptions: Vec<String>,
@@ -23,9 +22,10 @@ struct RuleData {
 pub struct Rule {
     pub name: String,
     pub description: Option<String>,
+    pub any: bool,
     pub conditions: Vec<Condition>,
     pub actions: Vec<Action>,
-    pub exceptions: Vec<String>,
+    pub exceptions: Vec<Condition>,
 }
 
 impl Rule {
@@ -40,12 +40,17 @@ impl Rule {
         for action in data.actions {
             actions.push(Action::new(action)?);
         }
+        let mut exceptions = Vec::new();
+        for exception in data.exceptions {
+            exceptions.push(Condition::new(exception)?);
+        }
         Ok(Rule {
             name: name,
             description: data.description,
+            any: data.any.unwrap_or(false),
             conditions: conditions,
             actions: actions,
-            exceptions: data.exceptions,
+            exceptions: exceptions,
         })
     }
 }

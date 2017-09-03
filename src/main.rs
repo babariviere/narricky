@@ -22,13 +22,29 @@ use mail::Mail;
 
 fn apply_rules(mail: &Mail, connection: &mut Connection, config: &Config, i: usize) -> bool {
     'rule_loop: for rule in &config.rules {
+        let mut condition_check = true;
         for condition in &rule.conditions {
-            if !condition.check(&mail) {
+            condition_check = condition.check(&mail);
+            if !condition_check && !rule.any {
                 println!(
-                    "mail does not meet condition {:?}: {:?}",
+                    "mail does not meet condition {:?}: {}",
                     condition,
-                    mail.to
+                    mail.subject
                 );
+                continue 'rule_loop;
+            } else if !condition_check {
+                continue;
+            }
+            if rule.any {
+                break;
+            }
+        }
+        if !condition_check && rule.any {
+            continue 'rule_loop;
+        }
+        for exception in &rule.exceptions {
+            if exception.check(&mail) {
+                println!("mail does meet exception {:?}: {}", exception, mail.subject);
                 continue 'rule_loop;
             }
         }
@@ -56,13 +72,10 @@ fn main() {
     }
     let mut connection = Connection::connect(&config.account).unwrap();
     connection.select("INBOX").unwrap();
-    println!(
-        "{:?}",
-        connection.status("INBOX", "(MESSAGES UNSEEN RECENT)")
-    );
     let mut i = 0;
     let mut len = connection.mail_number("INBOX").unwrap();
     // TODO test delete and else
+    // TODO add any or every and else
     while i < len {
         i += 1;
         let mail = connection.fetch_mail(i).unwrap();
