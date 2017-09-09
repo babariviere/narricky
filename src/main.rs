@@ -138,6 +138,5 @@ fn main() {
             ChdirMode::NoChdir,
         ).unwrap();
     }
-    let _ = ::std::fs::File::create("~/running");
     run_threads(accounts);
 }
