@@ -54,6 +54,7 @@ impl ActionType {
     /// Apply action to mail
     fn apply(&self, connection: &mut Connection, idx: usize) -> Result<()> {
         match self {
+            &ActionType::NoMoreRules => Ok(()),
             &ActionType::CopyTo(ref folder) => {
                 connection.create(folder)?;
                 connection.copy(&idx.to_string(), folder)?;
@@ -120,10 +121,11 @@ impl Action {
     }
 
     /// Check if actions remove mail
-    pub fn remove_mail(&self) -> bool {
+    pub fn should_stop(&self) -> bool {
         match self.0 {
             ActionType::MoveTo(_) |
-            ActionType::PermanentDelete => true,
+            ActionType::PermanentDelete |
+            ActionType::NoMoreRules => true,
             _ => false,
         }
     }
