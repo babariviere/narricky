@@ -69,6 +69,9 @@ impl ActionType {
             }
             &ActionType::Delete => {
                 connection.store(&idx.to_string(), "+flags (\\deleted)")?;
+                // TODO find trash with list, look at flags
+                connection.copy(&idx.to_string(), "TRASH")?;
+                connection.expunge()?;
                 Ok(())
             }
             &ActionType::PermanentDelete => {
@@ -120,14 +123,19 @@ impl Action {
         self.0.apply(connection, idx)
     }
 
-    /// Check if actions remove mail
-    pub fn should_stop(&self) -> bool {
+    /// Check if action remove mail
+    pub fn is_remove(&self) -> bool {
         match self.0 {
             ActionType::MoveTo(_) |
             ActionType::PermanentDelete |
-            ActionType::NoMoreRules => true,
+            ActionType::Delete => true,
             _ => false,
         }
+    }
+
+    /// Check if action stop other rules
+    pub fn is_rules_stop(&self) -> bool {
+        self.0 == ActionType::NoMoreRules
     }
 }
 

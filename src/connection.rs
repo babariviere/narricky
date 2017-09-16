@@ -38,6 +38,14 @@ impl Connection {
         }
     }
 
+    /// Set debug for connection
+    pub fn set_debug(&mut self, debug: bool) {
+        match &mut self.0 {
+            &mut ConnectionResult::Normal(ref mut s) => s.debug = debug,
+            &mut ConnectionResult::Secure(ref mut s) => s.debug = debug,
+        }
+    }
+
     /// Selects a mailbox
     pub fn select(&mut self, mailbox_name: &str) -> Result<Mailbox> {
         match &mut self.0 {
@@ -87,7 +95,13 @@ impl Connection {
     /// Create a mailbox
     pub fn create(&mut self, mailbox_name: &str) -> Result<()> {
         // TODO test subfolder
-        if self.list("/", mailbox_name)?.len() >= 2 {
+        let mut list: Vec<String> = mailbox_name.split('/').map(|s| s.to_owned()).collect();
+        let name = list.pop().unwrap_or(mailbox_name.to_owned());
+        let mut folder_name = list.iter().map(|s| format!("{}/", s)).collect::<String>();
+        if folder_name.is_empty() {
+            folder_name = "/".to_owned();
+        }
+        if self.list(&folder_name, &name)?.len() >= 2 {
             return Ok(());
         }
         match &mut self.0 {
@@ -172,6 +186,14 @@ impl Connection {
         }
     }
 
+    /// Send noop
+    pub fn noop(&mut self) -> Result<()> {
+        match &mut self.0 {
+            &mut ConnectionResult::Normal(ref mut s) => s.noop().chain_err(|| "fail with noop"),
+            &mut ConnectionResult::Secure(ref mut s) => s.noop().chain_err(|| "fail with noop"),
+        }
+    }
+
     /// Get number of mails
     pub fn mail_number(&mut self, mailbox_name: &str) -> Result<usize> {
         let status = self.status(mailbox_name, "(messages)")?;
@@ -182,26 +204,6 @@ impl Connection {
         num.parse::<usize>().chain_err(
             || "fail parsing number of mails",
         )
-    }
-
-    /// Wait for new event
-    pub fn wait(&mut self) -> Result<()> {
-        match &mut self.0 {
-            &mut ConnectionResult::Normal(ref mut s) => {
-                s.idle().chain_err(|| "fail when waiting")?.wait().map_err(
-                    |e| {
-                        e.into()
-                    },
-                )
-            }
-            &mut ConnectionResult::Secure(ref mut s) => {
-                s.idle().chain_err(|| "fail when waiting")?.wait().map_err(
-                    |e| {
-                        e.into()
-                    },
-                )
-            }
-        }
     }
 }
 

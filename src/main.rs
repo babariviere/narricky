@@ -37,11 +37,6 @@ fn apply_rules(
         for condition in &rule.conditions {
             condition_check = condition.check(&mail);
             if !condition_check && !rule.any {
-                println!(
-                    "mail does not meet condition {:?}: {}",
-                    condition,
-                    mail.subject
-                );
                 continue 'rule_loop;
             } else if !condition_check {
                 continue;
@@ -55,14 +50,16 @@ fn apply_rules(
         }
         for exception in &rule.exceptions {
             if exception.check(&mail) {
-                println!("mail does meet exception {:?}: {}", exception, mail.subject);
                 continue 'rule_loop;
             }
         }
-        println!("mail does meet conditions: {}", mail.subject);
+        println!("[{}] mail meet conditions: {}", rule.name, mail.subject);
         for action in &rule.actions {
             action.apply(connection, i)?;
-            if action.should_stop() {
+            if action.is_rules_stop() {
+                return Ok(false);
+            }
+            if action.is_remove() {
                 return Ok(true);
             }
         }
@@ -73,6 +70,7 @@ fn apply_rules(
 fn manage_account<P: AsRef<Path>>(path: P) -> Result<()> {
     let config = Config::from_file(path)?;
     let mut connection = Connection::connect(&config.account)?;
+    connection.set_debug(false);
     connection.select("INBOX")?;
     let mut i = 0;
     let mut len = connection.mail_number("INBOX")?;
@@ -84,8 +82,20 @@ fn manage_account<P: AsRef<Path>>(path: P) -> Result<()> {
             len -= 1;
         }
     }
+    let sync = config.account.sync.unwrap_or(60);
     loop {
-        connection.wait()?;
+        for _ in 0..(sync / 5) {
+            connection.noop()?;
+            thread::sleep(::std::time::Duration::from_secs(5));
+        }
+        println!("Syncing...");
+        connection.noop()?;
+        match connection.mail_number("INBOX")? {
+            a if a == i => continue,
+            a if a < i => i = a - 1,
+            _ => {}
+        }
+        println!("New mail");
         i += 1;
         let mail = connection.fetch_mail(i)?;
         if apply_rules(&mail, &mut connection, &config, i)? {
@@ -102,13 +112,18 @@ fn run_threads(accounts: Vec<String>) {
             Err(e) => println!("{}", e),
         }));
     }
+
     for handler in handlers {
-        let _ = handler.join();
+        println!("{:?}", handler.join());
     }
 }
 
 // TODO test delete and else
 // TODO add any or every and else
+// TODO automatic imap
+// TODO account manager
+// TODO rule manager
+// TODO list all created folders
 fn main() {
     let app = App::new("narricky")
         .version(crate_version!())

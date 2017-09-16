@@ -9,6 +9,7 @@ pub struct Account {
     pub domain: String,
     pub port: u16,
     pub secure: bool,
+    pub sync: Option<u64>,
 }
 
 impl Account {

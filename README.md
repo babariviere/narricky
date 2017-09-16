@@ -13,15 +13,30 @@ password = "your password"
 domain = "imap.gmail.com"
 port = 993
 secure = true
+sync = 60
 
 ## This is an example, this may change in the future
 [rule.rule_name_here]
 description = "move all gmail account to folder gmail"
+any = true
 conditions = [ "from contains gmail.com",
 	"subject is Hello world" ]
 actions = [ "move to gmail" ]
 exceptions = []
 ```
+
+If you want rules to be done in priority, just put a number before rule name.
+Example `[rule.1_priority_one]`.
+
+`any`, when it's true, stop check other conditions and directly do actions. By default, `any` is equal to false.
+
+## Account configuration
+First you have to set your `username` (email address) and `password`.
+
+After that, you need (will be automatic after) to give the domain name of your imap server and is port.
+`secure` field is here to enable a secure connection or not.
+
+`sync` is the sync interval, in seconds, between each data poll. If you don't set it, it will be equal to 60 by default.
 
 ## List of conditions (and exceptions)
 Conditions 3 fields:
